@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity 1: Understanding Propeller Thrust</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fafafa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            max-width: 900px;
+            width: 100%;
+            border: 2px solid #d0d0d0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #0a0a0a;
+            margin-bottom: 10px;
+            font-size: 32px;
+            font-weight: 400;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 28px;
+            }
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #3a3a3a;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .subtitle {
+                font-size: 14px;
+                margin-bottom: 20px;
+            }
+        }
+
+        .activity-area {
+            background: #f5f5f5;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 2px solid #9a9a9a;
+            position: relative;
+            overflow: hidden;
+            min-height: 450px;
+        }
+
+        @media (max-width: 768px) {
+            .activity-area {
+                padding: 20px;
+                min-height: 400px;
+            }
+        }
+
+        .animation-container {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .animation-container {
+                height: 300px;
+            }
+        }
+
+        /* Fan/Propeller */
+        .fan-container {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .fan {
+            width: 120px;
+            height: 120px;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .fan {
+                width: 100px;
+                height: 100px;
+            }
+        }
+
+        .fan-blade {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .fan-blade.spinning {
+            animation: spin 0.5s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Paper */
+        .paper {
+            position: absolute;
+            width: 150px;
+            height: 100px;
+            background: white;
+            border: 3px solid #1a1a1a;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            left: 50%;
+            transform: translateX(-50%);
+            transition: all 0.8s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #3a3a3a;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .paper {
+                width: 120px;
+                height: 80px;
+                font-size: 12px;
+            }
+        }
+
+        .paper.lifted {
+            bottom: 200px;
+            transform: translateX(-50%) rotate(-2deg);
+        }
+
+        .paper.resting {
+            bottom: 180px;
+        }
+
+        /* Air particles */
+        .air-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: rgba(26, 26, 26, 0.6);
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        @keyframes airflow {
+            0% {
+                opacity: 0;
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-200px) scale(0.5);
+            }
+        }
+
+        .air-particle.active {
+            animation: airflow 1.5s ease-out infinite;
+        }
+
+        /* Force arrows */
+        .force-arrow {
+            position: absolute;
+            left: 50%;
+            width: 4px;
+            background: #1a1a1a;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .force-arrow.visible {
+            opacity: 1;
+        }
+
+        .force-arrow::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 15px solid #1a1a1a;
+        }
+
+        .arrow-up {
+            bottom: 180px;
+            height: 80px;
+            transform: translateX(-50%);
+        }
+
+        .arrow-label {
+            position: absolute;
+            font-weight: bold;
+            font-size: 14px;
+            background: rgba(255,255,255,0.9);
+            padding: 5px 10px;
+            border: 1px solid #1a1a1a;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .arrow-label {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+        }
+
+        .label-lift {
+            color: #0a0a0a;
+            bottom: 270px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: #f5f5f5;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #d0d0d0;
+        }
+
+        @media (max-width: 768px) {
+            .control-panel {
+                padding: 15px;
+            }
+        }
+
+        .control-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0a0a0a;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .control-label {
+                font-size: 14px;
+            }
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .slider {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+            background: #ddd;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .speed-value {
+            min-width: 50px;
+            font-weight: bold;
+            color: #0a0a0a;
+            font-size: 16px;
+        }
+
+        .btn-toggle {
+            background: #1a1a1a;
+            color: white;
+            border: 2px solid #1a1a1a;
+            padding: 14px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .btn-toggle {
+                padding: 12px 24px;
+                font-size: 15px;
+            }
+        }
+
+        .btn-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            background: #000000;
+        }
+
+        .btn-toggle.active {
+            background: #3a3a3a;
+            border-color: #3a3a3a;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: #f0f0f0;
+            border-left: 5px solid #6a6a6a;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .info-box {
+                padding: 15px;
+            }
+        }
+
+        .info-box h3 {
+            color: #0a0a0a;
+            font-size: 18px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .info-box h3 {
+                font-size: 16px;
+            }
+        }
+
+        .info-box p {
+            color: #3a3a3a;
+            font-size: 14px;
+            line-height: 1.8;
+            margin: 8px 0;
+        }
+
+        @media (max-width: 768px) {
+            .info-box p {
+                font-size: 13px;
+                line-height: 1.6;
+            }
+        }
+
+        .info-box strong {
+            color: #0a0a0a;
+        }
+
+        /* Status indicator */
+        .status-indicator {
+            text-align: center;
+            padding: 15px;
+            background: #f0f0f0;
+            border: 2px solid #1a1a1a;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #0a0a0a;
+        }
+
+        @media (max-width: 768px) {
+            .status-indicator {
+                font-size: 16px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚁 Activity 1: Understanding Propeller Thrust</h1>
+        <p class="subtitle">Watch how air flow creates lift!</p>
+
+        <div class="status-indicator" id="statusText">
+            🔴 Fan is OFF - Click "Start Fan" to begin
+        </div>
+
+        <div class="activity-area">
+            <div class="animation-container" id="animationContainer">
+                <!-- Paper -->
+                <div class="paper resting" id="paper">📄 Paper</div>
+
+                <!-- Force Arrow -->
+                <div class="force-arrow arrow-up" id="arrowUp"></div>
+                <div class="arrow-label label-lift" id="labelLift" style="opacity: 0;">LIFT ⬆️</div>
+
+                <!-- Air Particles -->
+                <div class="air-particle" id="particle1" style="bottom: 50px; left: calc(50% - 30px);"></div>
+                <div class="air-particle" id="particle2" style="bottom: 50px; left: calc(50% - 10px);"></div>
+                <div class="air-particle" id="particle3" style="bottom: 50px; left: calc(50% + 10px);"></div>
+                <div class="air-particle" id="particle4" style="bottom: 50px; left: calc(50% + 30px);"></div>
+
+                <!-- Fan -->
+                <div class="fan-container">
+                    <svg class="fan-blade" id="fanBlade" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="60" cy="60" r="12" fill="#1a1a1a"/>
+                        <ellipse cx="60" cy="25" rx="15" ry="30" fill="#3a3a3a" opacity="0.8"/>
+                        <ellipse cx="95" cy="60" rx="30" ry="15" fill="#3a3a3a" opacity="0.8"/>
+                        <ellipse cx="60" cy="95" rx="15" ry="30" fill="#3a3a3a" opacity="0.8"/>
+                        <ellipse cx="25" cy="60" rx="30" ry="15" fill="#3a3a3a" opacity="0.8"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <label class="control-label">Fan Speed Control</label>
+            <div class="slider-container">
+                <span>Slow</span>
+                <input type="range" min="0" max="100" value="0" class="slider" id="speedSlider">
+                <span>Fast</span>
+                <span class="speed-value" id="speedValue">0%</span>
+            </div>
+            <button class="btn-toggle" id="toggleBtn">🔵 Start Fan</button>
+        </div>
+
+        <div class="info-box">
+            <h3>🔬 What's Happening?</h3>
+            <p><strong>When the fan spins:</strong> It pushes air molecules downward (blue dots moving down)</p>
+            <p><strong>Newton's 3rd Law:</strong> Air pushes back upward with equal force</p>
+            <p><strong>Result:</strong> The paper experiences LIFT and rises up!</p>
+            <p><strong>Drone Connection:</strong> Propellers work exactly the same way - they push air down to create lift that keeps the drone flying! 🚁</p>
+        </div>
+    </div>
+
+    <script>
+        const fanBlade = document.getElementById('fanBlade');
+        const paper = document.getElementById('paper');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        const statusText = document.getElementById('statusText');
+        const arrowUp = document.getElementById('arrowUp');
+        const labelLift = document.getElementById('labelLift');
+        const particles = [
+            document.getElementById('particle1'),
+            document.getElementById('particle2'),
+            document.getElementById('particle3'),
+            document.getElementById('particle4')
+        ];
+
+        let isRunning = false;
+        let currentSpeed = 0;
+
+        function updateAnimation() {
+            const speed = parseInt(speedSlider.value);
+            currentSpeed = speed;
+            speedValue.textContent = speed + '%';
+
+            if (speed > 0 && isRunning) {
+                // Spin fan
+                fanBlade.classList.add('spinning');
+                const spinSpeed = 0.5 - (speed / 100) * 0.4; // Faster spin at higher speed
+                fanBlade.style.animationDuration = spinSpeed + 's';
+
+                // Activate air particles
+                particles.forEach((particle, index) => {
+                    particle.classList.add('active');
+                    particle.style.animationDelay = (index * 0.3) + 's';
+                    particle.style.animationDuration = (1.5 - speed / 200) + 's';
+                });
+
+                // Lift paper based on speed
+                if (speed > 20) {
+                    paper.classList.remove('resting');
+                    paper.classList.add('lifted');
+                    const liftHeight = 200 + (speed / 100) * 100;
+                    paper.style.bottom = liftHeight + 'px';
+
+                    // Show force arrow
+                    arrowUp.classList.add('visible');
+                    labelLift.style.opacity = '1';
+                    arrowUp.style.height = (liftHeight - 180) + 'px';
+                    labelLift.style.bottom = (liftHeight + 10) + 'px';
+
+                    statusText.textContent = '🟢 Fan is ON - Paper is LIFTING!';
+                    statusText.style.color = '#0a0a0a';
+                } else {
+                    paper.classList.remove('lifted');
+                    paper.classList.add('resting');
+                    arrowUp.classList.remove('visible');
+                    labelLift.style.opacity = '0';
+                    statusText.textContent = '🟡 Fan is ON - Speed too low to lift paper';
+                    statusText.style.color = '#3a3a3a';
+                }
+            } else {
+                // Stop everything
+                fanBlade.classList.remove('spinning');
+                particles.forEach(particle => {
+                    particle.classList.remove('active');
+                });
+                paper.classList.remove('lifted');
+                paper.classList.add('resting');
+                arrowUp.classList.remove('visible');
+                labelLift.style.opacity = '0';
+                
+                if (isRunning) {
+                    statusText.textContent = '🟡 Fan is ON but speed is 0%';
+                    statusText.style.color = '#3a3a3a';
+                } else {
+                    statusText.textContent = '🔴 Fan is OFF - Click "Start Fan" to begin';
+                    statusText.style.color = '#6a6a6a';
+                }
+            }
+        }
+
+        toggleBtn.addEventListener('click', function() {
+            isRunning = !isRunning;
+            if (isRunning) {
+                toggleBtn.textContent = '🔴 Stop Fan';
+                toggleBtn.classList.add('active');
+            } else {
+                toggleBtn.textContent = '🔵 Start Fan';
+                toggleBtn.classList.remove('active');
+                speedSlider.value = 0;
+            }
+            updateAnimation();
+        });
+
+        speedSlider.addEventListener('input', updateAnimation);
+
+        // Initialize
+        updateAnimation();
+    </script>
+</body>
+</html>

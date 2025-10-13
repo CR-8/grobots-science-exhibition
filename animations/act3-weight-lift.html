@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weight vs. Lift Drone Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fafafa;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #0a0a0a;
+            margin-bottom: 10px;
+            font-size: 32px;
+            font-weight: 400;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #3a3a3a;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 14px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .flight-zone {
+            background: #f5f5f5;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            position: relative;
+            min-height: 500px;
+            border: 2px solid #9a9a9a;
+        }
+        
+        .drone-container {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: top 1s ease-in-out;
+        }
+        
+        .drone {
+            width: 200px;
+            height: 140px;
+            position: relative;
+        }
+        
+        .drone-body {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 30px;
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+        
+        .camera {
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            border-radius: 50%;
+        }
+        
+        .arm {
+            position: absolute;
+            width: 70px;
+            height: 6px;
+            background: linear-gradient(90deg, #2c3e50, #34495e);
+            border-radius: 3px;
+        }
+        
+        .arm-top-left {
+            top: 20px;
+            left: 10px;
+            transform: rotate(-45deg);
+        }
+        
+        .arm-top-right {
+            top: 20px;
+            right: 10px;
+            transform: rotate(45deg);
+        }
+        
+        .arm-bottom-left {
+            bottom: 20px;
+            left: 10px;
+            transform: rotate(45deg);
+        }
+        
+        .arm-bottom-right {
+            bottom: 20px;
+            right: 10px;
+            transform: rotate(-45deg);
+        }
+        
+        .propeller {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+        }
+        
+        .propeller-top-left { top: 0; left: 0; }
+        .propeller-top-right { top: 0; right: 0; }
+        .propeller-bottom-left { bottom: 0; left: 0; }
+        .propeller-bottom-right { bottom: 0; right: 0; }
+        
+        .motor {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 15px;
+            height: 15px;
+            background: #2c3e50;
+            border-radius: 50%;
+        }
+        
+        .blade-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            animation: spin 0.3s linear infinite;
+        }
+        
+        .blade-container.stopped {
+            animation: none;
+        }
+        
+        @keyframes spin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .blade {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 45px;
+            height: 6px;
+            background: linear-gradient(90deg, transparent, #3498db, transparent);
+            border-radius: 3px;
+            opacity: 0.6;
+        }
+        
+        .blade-1 { transform: translate(-50%, -50%) rotate(0deg); }
+        .blade-2 { transform: translate(-50%, -50%) rotate(90deg); }
+        
+        .ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to bottom, #27ae60, #229954);
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .controls-panel {
+            background: white;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            border: 2px solid #d0d0d0;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            color: #0a0a0a;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .material-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .material-card {
+            background: white;
+            border: 3px solid #ddd;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .material-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .material-card.selected {
+            border-color: #1a1a1a;
+            background: #f0f0f0;
+        }
+        
+        .material-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+        
+        .material-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .material-weight {
+            color: #e74c3c;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .info-box {
+            background: #f0f0f0;
+            border-left: 5px solid #6a6a6a;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box strong {
+            display: block;
+            font-size: 18px;
+            color: #0a0a0a;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .info-box p {
+            color: #3a3a3a;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+        
+        .stats {
+            background: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #d0d0d0;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .stat-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .stat-label {
+            color: #555;
+        }
+        
+        .stat-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .fly-btn {
+            width: 100%;
+            padding: 18px;
+            background: #1a1a1a;
+            color: white;
+            border: 2px solid #1a1a1a;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .fly-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: #000000;
+        }
+        
+        .fly-btn.cannot-fly {
+            background: #6a6a6a;
+            border-color: #6a6a6a;
+        }
+        
+        .status-message {
+            margin-top: 15px;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+            border: 2px solid;
+        }
+        
+        .status-success {
+            background: #f0f0f0;
+            color: #0a0a0a;
+            border-color: #1a1a1a;
+        }
+        
+        .status-fail {
+            background: #f0f0f0;
+            color: #0a0a0a;
+            border-color: #6a6a6a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚁 Weight vs. Lift Challenge</h1>
+        <p class="subtitle">Activity 3: Learn why drones use lightweight materials!</p>
+        
+        <div class="main-content">
+            <div class="flight-zone">
+                <h3 style="color: #2c3e50; margin-bottom: 20px;">Flight Zone</h3>
+                <div class="drone-container" id="droneContainer">
+                    <div class="drone">
+                        <div class="drone-body">
+                            <div class="camera"></div>
+                        </div>
+                        <div class="arm arm-top-left"></div>
+                        <div class="arm arm-top-right"></div>
+                        <div class="arm arm-bottom-left"></div>
+                        <div class="arm arm-bottom-right"></div>
+                        
+                        <div class="propeller propeller-top-left">
+                            <div class="motor"></div>
+                            <div class="blade-container">
+                                <div class="blade blade-1"></div>
+                                <div class="blade blade-2"></div>
+                            </div>
+                        </div>
+                        <div class="propeller propeller-top-right">
+                            <div class="motor"></div>
+                            <div class="blade-container">
+                                <div class="blade blade-1"></div>
+                                <div class="blade blade-2"></div>
+                            </div>
+                        </div>
+                        <div class="propeller propeller-bottom-left">
+                            <div class="motor"></div>
+                            <div class="blade-container">
+                                <div class="blade blade-1"></div>
+                                <div class="blade blade-2"></div>
+                            </div>
+                        </div>
+                        <div class="propeller propeller-bottom-right">
+                            <div class="motor"></div>
+                            <div class="blade-container">
+                                <div class="blade blade-1"></div>
+                                <div class="blade blade-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ground"></div>
+            </div>
+            
+            <div class="controls-panel">
+                <div class="section">
+                    <div class="section-title">📦 Choose Frame Material</div>
+                    <div class="material-options">
+                        <div class="material-card selected" onclick="selectMaterial('carbon', 100)">
+                            <div class="material-icon">🪶</div>
+                            <div class="material-name">Carbon Fiber</div>
+                            <div class="material-weight">100g (Light!)</div>
+                        </div>
+                        <div class="material-card" onclick="selectMaterial('plastic', 150)">
+                            <div class="material-icon">🧊</div>
+                            <div class="material-name">Plastic</div>
+                            <div class="material-weight">150g (Medium)</div>
+                        </div>
+                        <div class="material-card" onclick="selectMaterial('aluminum', 250)">
+                            <div class="material-icon">🔩</div>
+                            <div class="material-name">Aluminum</div>
+                            <div class="material-weight">250g (Heavy)</div>
+                        </div>
+                        <div class="material-card" onclick="selectMaterial('steel', 400)">
+                            <div class="material-icon">⚙️</div>
+                            <div class="material-name">Steel</div>
+                            <div class="material-weight">400g (Very Heavy!)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <p><strong>💡 Why Materials Matter:</strong></p>
+                    <p>✓ Carbon fiber is super strong but lightweight</p>
+                    <p>✓ Heavy materials need more lift to fly</p>
+                    <p>✓ Every gram counts in drone design!</p>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">📊 Drone Statistics</div>
+                    <div class="stats">
+                        <div class="stat-row">
+                            <span class="stat-label">🔋 Battery Weight:</span>
+                            <span class="stat-value">200g</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">📦 Frame Weight:</span>
+                            <span class="stat-value" id="frameWeight">100g</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">⚖️ Total Weight:</span>
+                            <span class="stat-value" id="totalWeight">300g</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">🚀 Lift Power:</span>
+                            <span class="stat-value">500g</span>
+                        </div>
+                        <div class="stat-row" id="resultRow">
+                            <span class="stat-label">Result:</span>
+                            <span class="stat-value" style="color: #27ae60;" id="resultText">✅ Can Fly! (+200g)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="fly-btn" id="flyBtn" onclick="testFlight()">
+                    🚀 Test Flight!
+                </button>
+                
+                <div class="status-message status-success" id="statusMessage" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let frameWeight = 100;
+        const batteryWeight = 200;
+        const liftPower = 500;
+        let currentMaterial = 'carbon';
+        
+        function selectMaterial(material, weight) {
+            const cards = document.querySelectorAll('.material-card');
+            cards.forEach(card => card.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            
+            frameWeight = weight;
+            currentMaterial = material;
+            updateStats();
+            updateDronePosition();
+        }
+        
+        function updateDronePosition() {
+            const totalWeight = batteryWeight + frameWeight;
+            const canFly = totalWeight <= liftPower;
+            const droneContainer = document.getElementById('droneContainer');
+            const bladeContainers = document.querySelectorAll('.blade-container');
+            
+            if (canFly) {
+                const liftStrength = liftPower - totalWeight;
+                // More lift = higher position
+                // Carbon: 200g lift -> 50px
+                // Plastic: 150g lift -> 100px
+                let position;
+                if (liftStrength >= 200) {
+                    position = '50px'; // Carbon fiber - highest
+                } else if (liftStrength >= 150) {
+                    position = '120px'; // Plastic - medium-high
+                } else {
+                    position = '200px'; // Just barely flying
+                }
+                droneContainer.style.top = position;
+                
+                // Start propellers when can fly
+                bladeContainers.forEach(container => {
+                    container.classList.remove('stopped');
+                });
+            } else {
+                // Heavy materials stay on ground
+                droneContainer.style.top = '380px';
+                
+                // Stop propellers when can't fly
+                bladeContainers.forEach(container => {
+                    container.classList.add('stopped');
+                });
+            }
+        }
+        
+        function updateStats() {
+            const totalWeight = batteryWeight + frameWeight;
+            const canFly = totalWeight <= liftPower;
+            const difference = liftPower - totalWeight;
+            
+            document.getElementById('frameWeight').textContent = frameWeight + 'g';
+            document.getElementById('totalWeight').textContent = totalWeight + 'g';
+            
+            const resultText = document.getElementById('resultText');
+            const resultRow = document.getElementById('resultRow');
+            const flyBtn = document.getElementById('flyBtn');
+            
+            if (canFly) {
+                resultText.textContent = `✅ Can Fly! (+${difference}g extra)`;
+                resultText.style.color = '#27ae60';
+                flyBtn.classList.remove('cannot-fly');
+                flyBtn.textContent = '🚀 Test Flight!';
+            } else {
+                resultText.textContent = `❌ Too Heavy! (${Math.abs(difference)}g over)`;
+                resultText.style.color = '#e74c3c';
+                flyBtn.classList.add('cannot-fly');
+                flyBtn.textContent = '⚠️ Try Lighter Material';
+            }
+        }
+        
+        function testFlight() {
+            const totalWeight = batteryWeight + frameWeight;
+            const canFly = totalWeight <= liftPower;
+            const droneContainer = document.getElementById('droneContainer');
+            const statusMessage = document.getElementById('statusMessage');
+            const bladeContainers = document.querySelectorAll('.blade-container');
+            
+            if (canFly) {
+                // Start propellers
+                bladeContainers.forEach(container => {
+                    container.classList.remove('stopped');
+                });
+                
+                // Fly up
+                droneContainer.style.top = '50px';
+                
+                statusMessage.className = 'status-message status-success';
+                statusMessage.textContent = `🎉 Success! Your drone is flying with ${currentMaterial} frame!`;
+                statusMessage.style.display = 'block';
+                
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 3000);
+            } else {
+                // Stop propellers
+                bladeContainers.forEach(container => {
+                    container.classList.add('stopped');
+                });
+                
+                // Stay on ground
+                droneContainer.style.top = '380px';
+                
+                statusMessage.className = 'status-message status-fail';
+                statusMessage.textContent = `❌ Too heavy! Try a lighter material like Carbon Fiber or Plastic.`;
+                statusMessage.style.display = 'block';
+                
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // Initialize
+        updateStats();
+        updateDronePosition();
+    </script>
+</body>
+</html>

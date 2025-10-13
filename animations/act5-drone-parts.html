@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone Components Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fafafa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            max-width: 1100px;
+            width: 100%;
+            border: 2px solid #d0d0d0;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                padding: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #0a0a0a;
+            margin-bottom: 10px;
+            font-size: 32px;
+            font-weight: 400;
+        }
+
+        @media (max-width: 1024px) {
+            h1 {
+                font-size: 28px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 24px;
+                margin-bottom: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 20px;
+            }
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #3a3a3a;
+            margin-bottom: 25px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 768px) {
+            .subtitle {
+                font-size: 13px;
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .subtitle {
+                font-size: 12px;
+                margin-bottom: 15px;
+            }
+        }
+
+        .quiz-container {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .quiz-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .quiz-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quiz-container {
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+        }
+
+        .drone-section {
+            background: #f5f5f5;
+            padding: 25px;
+            position: relative;
+            border: 2px solid #9a9a9a;
+        }
+
+        @media (max-width: 1024px) {
+            .drone-section {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .drone-section {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .drone-section {
+                padding: 12px;
+            }
+        }
+
+        .drone-diagram {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 1024px) {
+            .drone-diagram {
+                height: 450px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .drone-diagram {
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .drone-diagram {
+                height: 350px;
+            }
+        }
+
+        .drone-exploded-view {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hotspot {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            background: rgba(26, 26, 26, 0.95);
+            border: 3px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+            animation: pulse 2s infinite;
+            z-index: 10;
+        }
+
+        @media (max-width: 768px) {
+            .hotspot {
+                width: 32px;
+                height: 32px;
+                font-size: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hotspot {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+                border: 2px solid white;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+            }
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.6);
+            }
+        }
+
+        .hotspot:hover {
+            transform: scale(1.25);
+            background: rgba(0, 0, 0, 1);
+        }
+
+        .hotspot.correct {
+            background: rgba(106, 106, 106, 0.95);
+            animation: none;
+            cursor: default;
+        }
+
+        .hotspot.correct::after {
+            content: '✓';
+            font-size: 20px;
+        }
+
+        .hotspot.selected {
+            background: rgba(58, 58, 58, 0.95);
+            transform: scale(1.3);
+            animation: none;
+        }
+
+        .labels-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0a0a0a;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .section-title {
+                font-size: 15px;
+            }
+        }
+
+        .label-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .label-item {
+            background: white;
+            padding: 18px;
+            border: 3px solid #d0d0d0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            user-select: none;
+        }
+
+        @media (max-width: 1024px) {
+            .label-item {
+                padding: 16px;
+                gap: 12px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .label-item {
+                padding: 14px;
+                gap: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .label-item {
+                padding: 12px;
+                gap: 10px;
+                border-radius: 10px;
+            }
+        }
+
+        .label-item:hover {
+            border-color: #1a1a1a;
+            background: #f0f0f0;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .label-item.used {
+            background: #f8f9fa;
+            border-color: #6a6a6a;
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .label-item.used:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .label-icon {
+            width: 50px;
+            height: 50px;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .label-text {
+            font-weight: 600;
+            color: #0a0a0a;
+            flex: 1;
+            font-size: 16px;
+        }
+
+        .progress-section {
+            background: #f0f0f0;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border: 2px solid #d0d0d0;
+        }
+
+        .progress-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0a0a0a;
+        }
+
+        .progress-bar-container {
+            flex: 1;
+            min-width: 200px;
+            height: 24px;
+            background: #e0e0e0;
+            overflow: hidden;
+            border: 2px solid #9a9a9a;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #1a1a1a;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 35px;
+            border: 2px solid;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn-reset {
+            background: white;
+            color: #0a0a0a;
+            border-color: #1a1a1a;
+        }
+
+        .btn-reset:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: #f0f0f0;
+        }
+
+        .btn-check {
+            background: #1a1a1a;
+            color: white;
+            border-color: #1a1a1a;
+        }
+
+        .btn-check:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: #000000;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .celebration-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .celebration-modal.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .celebration-content {
+            background: white;
+            padding: 40px;
+            border: 2px solid #d0d0d0;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: slideUp 0.5s ease;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .celebration-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 0.6s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .celebration-content h2 {
+            color: #0a0a0a;
+            font-size: 32px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .celebration-content p {
+            color: #3a3a3a;
+            font-size: 18px;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .score-display {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+
+        .close-celebration {
+            background: #1a1a1a;
+            color: white;
+            border: 2px solid #1a1a1a;
+            padding: 14px 35px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-celebration:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: #000000;
+        }
+
+        .instruction-box {
+            background: #f0f0f0;
+            border-left: 5px solid #6a6a6a;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .instruction-box strong {
+            display: block;
+            font-size: 18px;
+            color: #0a0a0a;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .instruction-box p {
+            color: #3a3a3a;
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .instruction-box p {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚁 Drone Components Quiz</h1>
+        <p class="subtitle">Identify the 5 Essential Drone Parts</p>
+
+        <div class="instruction-box">
+            <p><strong>📝 How to Play:</strong></p>
+            <p>• Click on any numbered red dot (⚫) on the drone diagram</p>
+            <p>• Then click the correct component label from the right panel</p>
+            <p>• Match all 5 components correctly to complete the quiz!</p>
+        </div>
+
+        <div class="progress-section">
+            <span class="progress-text">Progress: <span id="progressCount">0/5</span></span>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="quiz-container">
+            <div class="drone-section">
+                <div class="section-title">🚁 Identify Each Component</div>
+                <div class="drone-diagram">
+                    <svg class="drone-exploded-view" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Background grid for technical look -->
+                        <defs>
+                            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e0e0e0" stroke-width="0.5"/>
+                            </pattern>
+                        </defs>
+                        <rect width="500" height="500" fill="url(#grid)" opacity="0.3"/>
+
+                        <!-- Propeller 1 (Top Left) - LARGE and CLEAR -->
+                        <g transform="translate(80, 80)">
+                            <ellipse cx="0" cy="0" rx="45" ry="10" fill="#e74c3c" opacity="0.8" stroke="#c0392b" stroke-width="2"/>
+                            <ellipse cx="0" cy="0" rx="10" ry="45" fill="#e74c3c" opacity="0.8" stroke="#c0392b" stroke-width="2"/>
+                            <circle cx="0" cy="0" r="8" fill="#2c3e50"/>
+                        </g>
+
+                        <!-- Motor 1 (Top Right) - LARGE and CLEAR -->
+                        <g transform="translate(420, 80)">
+                            <circle cx="0" cy="0" r="20" fill="#555" stroke="#333" stroke-width="3"/>
+                            <circle cx="0" cy="0" r="12" fill="#777"/>
+                            <circle cx="0" cy="0" r="5" fill="#333"/>
+                            <!-- Mounting screws -->
+                            <circle cx="-12" cy="0" r="2" fill="#222"/>
+                            <circle cx="12" cy="0" r="2" fill="#222"/>
+                            <circle cx="0" cy="-12" r="2" fill="#222"/>
+                            <circle cx="0" cy="12" r="2" fill="#222"/>
+                        </g>
+
+                        <!-- Frame (Center) - LARGE and CLEAR -->
+                        <g transform="translate(250, 250)">
+                            <!-- Main body -->
+                            <rect x="-40" y="-40" width="80" height="80" rx="8" fill="#2c3e50" stroke="#1a252f" stroke-width="4"/>
+                            <!-- Center detail -->
+                            <rect x="-25" y="-25" width="50" height="50" rx="5" fill="#34495e" stroke="#1a252f" stroke-width="2"/>
+                            <circle cx="0" cy="0" r="15" fill="#1a252f"/>
+                            <!-- Arms extending out -->
+                            <line x1="0" y1="0" x2="-150" y2="-150" stroke="#34495e" stroke-width="10" stroke-linecap="round"/>
+                            <line x1="0" y1="0" x2="150" y2="-150" stroke="#34495e" stroke-width="10" stroke-linecap="round"/>
+                            <line x1="0" y1="0" x2="-150" y2="150" stroke="#34495e" stroke-width="10" stroke-linecap="round"/>
+                            <line x1="0" y1="0" x2="150" y2="150" stroke="#34495e" stroke-width="10" stroke-linecap="round"/>
+                        </g>
+
+                        <!-- Battery (Top Center) - LARGE and CLEAR -->
+                        <g transform="translate(250, 150)">
+                            <rect x="-50" y="-20" width="100" height="40" rx="5" fill="#f39c12" stroke="#e67e22" stroke-width="3"/>
+                            <!-- Battery details -->
+                            <rect x="-45" y="-15" width="90" height="30" rx="3" fill="#f1c40f"/>
+                            <!-- Terminals -->
+                            <rect x="40" y="-8" width="12" height="16" rx="2" fill="#c0392b"/>
+                            <rect x="-52" y="-8" width="12" height="16" rx="2" fill="#2c3e50"/>
+                            <!-- Battery cells indicator -->
+                            <line x1="-30" y1="-15" x2="-30" y2="15" stroke="#e67e22" stroke-width="2"/>
+                            <line x1="-10" y1="-15" x2="-10" y2="15" stroke="#e67e22" stroke-width="2"/>
+                            <line x1="10" y1="-15" x2="10" y2="15" stroke="#e67e22" stroke-width="2"/>
+                            <line x1="30" y1="-15" x2="30" y2="15" stroke="#e67e22" stroke-width="2"/>
+                        </g>
+
+                        <!-- ESC (Bottom Left) - LARGE and CLEAR -->
+                        <g transform="translate(120, 380)">
+                            <rect x="-35" y="-20" width="70" height="40" rx="4" fill="#3498db" stroke="#2980b9" stroke-width="3"/>
+                            <!-- Circuit board details -->
+                            <rect x="-30" y="-15" width="60" height="30" rx="2" fill="#2c3e50"/>
+                            <!-- Chips and components -->
+                            <rect x="-20" y="-8" width="15" height="16" rx="1" fill="#555"/>
+                            <rect x="5" y="-8" width="15" height="16" rx="1" fill="#555"/>
+                            <!-- Wire connections -->
+                            <circle cx="-25" cy="15" r="3" fill="#e74c3c"/>
+                            <circle cx="-15" cy="15" r="3" fill="#2c3e50"/>
+                            <circle cx="15" cy="15" r="3" fill="#f39c12"/>
+                        </g>
+
+                        <!-- Additional motors for complete look -->
+                        <g transform="translate(80, 420)">
+                            <circle cx="0" cy="0" r="18" fill="#555" stroke="#333" stroke-width="3"/>
+                        </g>
+                        <g transform="translate(420, 420)">
+                            <circle cx="0" cy="0" r="18" fill="#555" stroke="#333" stroke-width="3"/>
+                        </g>
+
+                        <!-- Additional propellers -->
+                        <g transform="translate(420, 80)">
+                            <ellipse cx="0" cy="0" rx="42" ry="10" fill="#e74c3c" opacity="0.7"/>
+                            <ellipse cx="0" cy="0" rx="10" ry="42" fill="#e74c3c" opacity="0.7"/>
+                        </g>
+                    </svg>
+
+                    <!-- Hotspots - Positioned on key components -->
+                    <div class="hotspot" data-component="propeller" style="top: 12%; left: 12%;">1</div>
+                    <div class="hotspot" data-component="motor" style="top: 12%; left: 82%;">2</div>
+                    <div class="hotspot" data-component="frame" style="top: 50%; left: 50%;">3</div>
+                    <div class="hotspot" data-component="battery" style="top: 28%; left: 50%;">4</div>
+                    <div class="hotspot" data-component="esc" style="top: 75%; left: 20%;">5</div>
+                </div>
+            </div>
+
+            <div class="labels-section">
+                <div class="section-title">📋 Component Labels</div>
+                <div class="label-options" id="labelOptions">
+                    <div class="label-item" data-label="frame">
+                        <div class="label-icon">🔲</div>
+                        <div class="label-text">Frame</div>
+                    </div>
+                    <div class="label-item" data-label="propeller">
+                        <div class="label-icon">🌀</div>
+                        <div class="label-text">Propeller</div>
+                    </div>
+                    <div class="label-item" data-label="motor">
+                        <div class="label-icon">⚙️</div>
+                        <div class="label-text">Motor</div>
+                    </div>
+                    <div class="label-item" data-label="esc">
+                        <div class="label-icon">🔌</div>
+                        <div class="label-text">ESC</div>
+                    </div>
+                    <div class="label-item" data-label="battery">
+                        <div class="label-icon">🔋</div>
+                        <div class="label-text">Battery</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <button class="btn btn-reset" id="resetBtn">🔄 Reset Quiz</button>
+            <button class="btn btn-check" id="checkBtn" disabled>✓ Check Answers</button>
+        </div>
+    </div>
+
+    <div class="celebration-modal" id="celebrationModal">
+        <div class="celebration-content">
+            <div class="celebration-icon">🏆</div>
+            <h2>Perfect Score!</h2>
+            <div class="score-display" id="scoreDisplay">5/5 Components Correct!</div>
+            <p>Excellent work! You've mastered the essential drone components! Ready to build your own drone now! 🚁</p>
+            <button class="close-celebration" id="closeCelebration">Continue Learning</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedHotspot = null;
+        let correctAnswers = 0;
+        const totalQuestions = 5;
+
+        const hotspots = document.querySelectorAll('.hotspot');
+        const labelItems = document.querySelectorAll('.label-item');
+        const resetBtn = document.getElementById('resetBtn');
+        const checkBtn = document.getElementById('checkBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressCount = document.getElementById('progressCount');
+        const celebrationModal = document.getElementById('celebrationModal');
+        const closeCelebration = document.getElementById('closeCelebration');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+
+        function playSuccessSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+
+        function playVictorySound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            const duration = 0.15;
+
+            notes.forEach((freq, i) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + i * duration);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * duration + duration);
+
+                oscillator.start(audioContext.currentTime + i * duration);
+                oscillator.stop(audioContext.currentTime + i * duration + duration);
+            });
+        }
+
+        function updateProgress() {
+            progressCount.textContent = `${correctAnswers}/${totalQuestions}`;
+            const percentage = (correctAnswers / totalQuestions) * 100;
+            progressBar.style.width = percentage + '%';
+
+            if (correctAnswers === totalQuestions) {
+                checkBtn.disabled = false;
+            }
+        }
+
+        hotspots.forEach(hotspot => {
+            hotspot.addEventListener('click', function() {
+                if (this.classList.contains('correct')) return;
+
+                // Deselect previous hotspot
+                hotspots.forEach(h => {
+                    h.classList.remove('selected');
+                });
+                
+                // Select this hotspot
+                selectedHotspot = this;
+                this.classList.add('selected');
+            });
+        });
+
+        labelItems.forEach(item => {
+            item.addEventListener('click', function() {
+                if (this.classList.contains('used')) return;
+                if (!selectedHotspot) {
+                    alert('⚠️ Please select a numbered red dot on the drone first!');
+                    return;
+                }
+
+                const labelType = this.getAttribute('data-label');
+                const hotspotType = selectedHotspot.getAttribute('data-component');
+
+                if (labelType === hotspotType) {
+                    // Correct answer
+                    selectedHotspot.classList.remove('selected');
+                    selectedHotspot.classList.add('correct');
+                    this.classList.add('used');
+                    correctAnswers++;
+                    playSuccessSound();
+                    updateProgress();
+                    selectedHotspot = null;
+
+                    // Auto-show celebration when all answers are correct
+                    if (correctAnswers === totalQuestions) {
+                        setTimeout(() => {
+                            scoreDisplay.textContent = `Perfect! ${correctAnswers}/${totalQuestions} Components Correct!`;
+                            celebrationModal.classList.add('show');
+                            playVictorySound();
+                        }, 800);
+                    }
+                } else {
+                    // Wrong answer
+                    alert('❌ Incorrect! Try again. Hint: Look carefully at the component position.');
+                }
+            });
+        });
+
+        checkBtn.addEventListener('click', function() {
+            if (correctAnswers === totalQuestions) {
+                scoreDisplay.textContent = `${correctAnswers}/${totalQuestions} Components Correct!`;
+                celebrationModal.classList.add('show');
+                playVictorySound();
+            }
+        });
+
+        resetBtn.addEventListener('click', function() {
+            hotspots.forEach(hotspot => {
+                hotspot.classList.remove('correct', 'selected');
+                const num = hotspot.textContent.replace('✓', '');
+                hotspot.textContent = num;
+            });
+
+            labelItems.forEach(item => {
+                item.classList.remove('used');
+            });
+
+            correctAnswers = 0;
+            selectedHotspot = null;
+            checkBtn.disabled = true;
+            updateProgress();
+        });
+
+        closeCelebration.addEventListener('click', function() {
+            celebrationModal.classList.remove('show');
+        });
+
+        celebrationModal.addEventListener('click', function(e) {
+            if (e.target === celebrationModal) {
+                celebrationModal.classList.remove('show');
+            }
+        });
+
+        // Initialize
+        updateProgress();
+    </script>
+</body>
+</html>

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title> Vertical Flight Forces Simulation (Lift vs. Weight) </title>
+    <style>
+      /* Base Styles (Desktop/Tablet First) */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #fafafa;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px;
+      }
+
+      .container {
+        background: white;
+        border: 2px solid #d0d0d0;
+        padding: 40px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        max-width: 700px;
+        width: 100%;
+      }
+
+      h1 {
+        text-align: center;
+        color: #0a0a0a;
+        margin-bottom: 10px;
+        font-size: 32px;
+        font-weight: 400;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #3a3a3a;
+        margin-bottom: 30px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 14px;
+      }
+
+      .animation-area {
+        background: #f5f5f5;
+        height: 350px;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 30px;
+        border: 2px solid #9a9a9a;
+      }
+
+      /* Drone Styling */
+      .drone {
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        left: 50%;
+        transition: all 1s ease-in-out;
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+        transform: translate(-50%, -50%);
+      }
+      .drone.hover { top: 50%; }
+      .drone.rises { top: 20%; }
+      .drone.sinks { top: 80%; }
+
+      /* Force Display Indicators */
+      .force-arrows-container {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.98);
+        padding: 12px;
+        border: 1px solid #d0d0d0;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        z-index: 10;
+      }
+      .force-display {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .force-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+        flex-shrink: 0;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .force-bar {
+        flex: 1;
+        height: 10px;
+        background: #e0e0e0;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .force-value {
+        min-width: 30px;
+        text-align: right;
+        color: #666;
+        font-size: 14px;
+      }
+
+      /* Status/Balance Indicator */
+      .balance-indicator {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.95);
+        padding: 10px 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        font-weight: 700;
+        font-size: 15px;
+        text-align: center;
+        width: 90%;
+        max-width: 300px;
+        z-index: 10;
+      }
+      .rises-text { color: #3498db; }
+      .sinks-text { color: #e74c3c; }
+      .balanced { color: #27ae60; }
+
+      /* Controls & Info Box */
+      .controls {
+        display: flex;
+        justify-content: space-around;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .control-group {
+        flex: 1;
+        background: #f5f5f5;
+        padding: 20px;
+        border: 1px solid #d0d0d0;
+      }
+      .reset-btn {
+        padding: 12px 30px;
+        font-size: 16px;
+        width: 100%;
+        max-width: 350px;
+        margin: 20px auto;
+        display: block;
+        background: #1a1a1a;
+        color: white;
+        border: 2px solid #1a1a1a;
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+      .reset-btn:hover {
+        background: #000000;
+        border-color: #000000;
+      }
+      .info-box {
+        background: #f0f0f0;
+        border-left: 5px solid #6a6a6a;
+        padding: 20px;
+        margin-top: 20px;
+        font-size: 14px;
+      }
+      .info-box h3 { 
+        font-size: 18px;
+        color: #0a0a0a;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+      .info-box p { 
+        line-height: 1.6;
+        color: #3a3a3a;
+        text-align: left;
+      }
+
+      /* Modal Styling */
+      .celebration-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.92);
+        z-index: 1000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+      }
+      .celebration-modal.show {
+        display: flex;
+      }
+      .celebration-content {
+        background: white;
+        padding: 30px 25px;
+        border: 2px solid #d0d0d0;
+        text-align: center;
+        max-width: 90%;
+        width: 350px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      }
+      .celebration-icon { font-size: 60px; }
+      .celebration-content h2 { 
+        font-size: 24px;
+        color: #0a0a0a;
+        font-weight: 600;
+      }
+      .celebration-content p { 
+        font-size: 15px;
+        color: #3a3a3a;
+      }
+      .close-celebration {
+        padding: 10px 20px;
+        font-size: 14px;
+        background: #1a1a1a;
+        color: white;
+        border: 2px solid #1a1a1a;
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+      .close-celebration:hover {
+        background: #000000;
+        border-color: #000000;
+      }
+
+
+      /* ==================================== */
+      /* R E S P O N S I V E   O V E R R I D E S */
+      /* ==================================== */
+
+      /* Medium Screens (e.g., small tablets, landscape phones) */
+      @media (max-width: 768px) {
+        .container {
+          padding: 25px;
+        }
+        h1 { font-size: 28px; }
+        .subtitle { font-size: 13px; }
+      }
+
+      /* Small Screens (e.g., Portrait Phones) */
+      @media (max-width: 600px) {
+        .controls {
+          flex-direction: column; /* Stack sliders vertically */
+          gap: 10px;
+        }
+        .reset-btn {
+            max-width: 100%; /* Ensure reset button uses full width */
+        }
+      }
+
+      /* Extra Small Screens (e.g., iPhone SE / smallest phones) */
+      @media (max-width: 420px) {
+        .container {
+          padding: 8px;
+        }
+        h1 {
+          font-size: 20px;
+        }
+        .subtitle {
+          font-size: 12px;
+          margin-bottom: 10px;
+        }
+        .animation-area {
+          height: 220px; /* Compress animation area */
+          margin-bottom: 10px;
+        }
+        .drone {
+          width: 70px; /* Smallest drone size */
+          height: 70px;
+        }
+
+        /* Force Display Compression */
+        .force-arrows-container {
+          top: 8px;
+          right: 8px;
+          padding: 5px; /* Minimal padding */
+          gap: 5px;
+        }
+        .force-display {
+          font-size: 12px;
+        }
+        .force-icon {
+          width: 20px;
+          height: 20px;
+          font-size: 11px;
+        }
+        .force-value {
+          font-size: 11px;
+          min-width: 20px;
+        }
+
+        /* Balance Indicator Compression */
+        .balance-indicator {
+          font-size: 11px;
+          padding: 6px 10px;
+          bottom: 5px;
+        }
+
+        /* Controls & Info Box Compression */
+        .control-group {
+          padding: 10px;
+        }
+        .info-box {
+          padding: 10px;
+          font-size: 12px;
+        }
+        .info-box h3 {
+          font-size: 16px;
+        }
+        .reset-btn {
+            font-size: 14px;
+            padding: 10px 20px;
+        }
+
+        /* Modal Compression */
+        .celebration-content {
+          padding: 20px 15px;
+        }
+        .celebration-content h2 {
+          font-size: 20px;
+        }
+        .celebration-content p {
+          font-size: 13px;
+        }
+        .celebration-icon {
+          font-size: 50px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>⬆️ Flight Dynamics ⬇️</h1>
+      <p class="subtitle">Controlled by Lift and Weight only</p>
+
+      <div class="animation-area" id="animationArea">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+
+        <div class="force-arrows-container">
+          <div class="force-display">
+            <div class="force-icon lift-color">⬆️</div>
+            <div class="force-bar">
+              <div class="force-bar-fill lift-color" id="liftBar"></div>
+            </div>
+            <span class="force-value" id="liftDisplay">80</span>
+          </div>
+          <div class="force-display">
+            <div class="force-icon weight-color">⬇️</div>
+            <div class="force-bar">
+              <div class="force-bar-fill weight-color" id="weightBar"></div>
+            </div>
+            <span class="force-value" id="weightDisplay">50</span>
+          </div>
+        </div>
+
+        <div class="balance-indicator" id="balanceIndicator">
+          <span class="rises-text">
+            🟢 Lift > Weight &rarr; Drone Rises (Top)
+          </span>
+        </div>
+
+        <div class="drone rises" id="drone">
+          <svg
+            class="drone-image"
+            viewBox="0 0 200 200"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect
+              x="85" y="85" width="30" height="30" rx="4"
+              fill="#2c3e50" stroke="#1a252f" stroke-width="2"
+            />
+            <line x1="100" y1="100" x2="40" y2="40" stroke="#34495e" stroke-width="4" stroke-linecap="round" />
+            <line x1="100" y1="100" x2="160" y2="40" stroke="#34495e" stroke-width="4" stroke-linecap="round" />
+            <line x1="100" y1="100" x2="40" y2="160" stroke="#34495e" stroke-width="4" stroke-linecap="round" />
+            <line x1="100" y1="100" x2="160" y2="160" stroke="#34495e" stroke-width="4" stroke-linecap="round" />
+            <circle cx="40" cy="40" r="8" fill="#555" stroke="#333" stroke-width="1.5" />
+            <circle cx="160" cy="40" r="8" fill="#555" stroke="#333" stroke-width="1.5" />
+            <circle cx="40" cy="160" r="8" fill="#555" stroke="#333" stroke-width="1.5" />
+            <circle cx="160" cy="160" r="8" fill="#555" stroke="#333" stroke-width="1.5" />
+            <g class="propeller-spin">
+              <ellipse cx="40" cy="40" rx="18" ry="4" fill="#e74c3c" opacity="0.7">
+                <animateTransform attributeName="transform" type="rotate" from="0 40 40" to="360 40 40" dur="0.3s" repeatCount="indefinite" />
+              </ellipse>
+              <ellipse cx="40" cy="40" rx="4" ry="18" fill="#c0392b" opacity="0.7">
+                <animateTransform attributeName="transform" type="rotate" from="0 40 40" to="360 40 40" dur="0.3s" repeatCount="indefinite" />
+              </ellipse>
+            </g>
+            <g class="propeller-spin">
+              <ellipse cx="160" cy="40" rx="18" ry="4" fill="#e74c3c" opacity="0.7">
+                <animateTransform attributeName="transform" type="rotate" from="0 160 40" to="-360 160 40" dur="0.3s" repeatCount="indefinite" />
+              </ellipse>
+              <ellipse cx="160" cy="40" rx="4" ry="18" fill="#c0392b" opacity="0.7">
+                <animateTransform attributeName="transform" type="rotate" from="0 160 40" to="-360 160 40" dur="0.3s" repeatCount="indefinite" />
+              </ellipse>
+            </g>
+            <g class="propeller-spin">
+              <ellipse cx="40" cy="160" rx="18" ry="4" fill="#e74c3c" opacity="0.7">
+                <animateTransform attributeName="transform" type="rotate" from="0 40 160" to="-360 40 160" dur="0.3s" repeatCount="indefinite" />
+              </ellipse>
+              <ellipse cx="40" cy="160" rx="4" ry="18" fill="#c0392b" opacity="0.7">
+                <animateTransform attributeName="transform" type="rotate" from="0 40 160" to="-360 40 160" dur="0.3s" repeatCount="indefinite" />
+              </ellipse>
+            </g>
+            <g class="propeller-spin">
+              <ellipse cx="160" cy="160" rx="18" ry="4" fill="#e74c3c" opacity="0.7">
+                <animateTransform attributeName="transform" type="rotate" from="0 160 160" to="360 160 160" dur="0.3s" repeatCount="indefinite" />
+              </ellipse>
+              <ellipse cx="160" cy="160" rx="4" ry="18" fill="#c0392b" opacity="0.7">
+                <animateTransform attributeName="transform" type="rotate" from="0 160 160" to="360 160 160" dur="0.3s" repeatCount="indefinite" />
+              </ellipse>
+            </g>
+            <line x1="90" y1="115" x2="90" y2="125" stroke="#444" stroke-width="2" />
+            <line x1="110" y1="115" x2="110" y2="125" stroke="#444" stroke-width="2" />
+            <circle cx="90" cy="125" r="3" fill="#666" />
+            <circle cx="110" cy="125" r="3" fill="#666" />
+            <rect x="95" y="118" width="10" height="8" rx="2" fill="#3498db" stroke="#2980b9" stroke-width="1" />
+            <circle cx="100" cy="122" r="2" fill="#ecf0f1" />
+            <circle cx="35" cy="35" r="2" fill="#2ecc71" opacity="0.9">
+              <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="165" cy="35" r="2" fill="#e74c3c" opacity="0.9">
+              <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="35" cy="165" r="2" fill="#2ecc71" opacity="0.9">
+              <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="165" cy="165" r="2" fill="#e74c3c" opacity="0.9">
+              <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" />
+            </circle>
+            <rect x="97" y="97" width="6" height="6" rx="1" fill="#3498db" opacity="0.6" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="control-group">
+          <label>
+            ⬆️ Lift Force
+            <span class="value-display" id="liftValue">80</span>
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value="80"
+            class="slider"
+            id="liftSlider"
+          />
+        </div>
+
+        <div class="control-group">
+          <label>
+            ⬇️ Weight
+            <span class="value-display" id="weightValue">50</span>
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value="50"
+            class="slider"
+            id="weightSlider"
+          />
+        </div>
+      </div>
+
+      <button class="reset-btn" id="resetBtn">
+        Click to Set LIFT = WEIGHT (50)
+      </button>
+
+      <div class="info-box">
+        <h3>Vertical Flight Rules (Strict):</h3>
+        <p>
+          🟢 If Lift > Weight &rarr; Positive Force &rarr; Drone Rises (Top)
+        </p>
+        <p>
+          🔴 If Lift < Weight &rarr; Negative Force &rarr; Drone Sinks (Bottom)
+        </p>
+        <p style="font-weight: bold; color: #e65100">
+          ⚠️ If Lift == Weight &rarr; Zero Force &rarr; Drone Hovers (Middle)
+        </p>
+      </div>
+    </div>
+
+    <div class="celebration-modal" id="celebrationModal">
+      <div class="celebration-content">
+        <div class="celebration-icon">🎯 EXACT HOVER! 🎯</div>
+        <h2>Perfect Equilibrium Achieved!</h2>
+        <p>
+          Lift is "EXACTLY EQUAL" to Weight. The Drone is now perfectly **Hovering** at a fixed altitude in the middle. Congratulations on the precise control!
+        </p>
+        <button class="close-celebration" id="closeCelebration">
+          Close and Continue
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const drone = document.getElementById("drone");
+      const liftSlider = document.getElementById("liftSlider");
+      const weightSlider = document.getElementById("weightSlider");
+      const resetBtn = document.getElementById("resetBtn");
+      const celebrationModal = document.getElementById("celebrationModal");
+      const closeCelebration = document.getElementById("closeCelebration");
+      const balanceIndicator = document.getElementById("balanceIndicator");
+
+      const liftValue = document.getElementById("liftValue");
+      const weightValue = document.getElementById("weightValue");
+      const liftDisplay = document.getElementById("liftDisplay");
+      const weightDisplay = document.getElementById("weightDisplay");
+      const liftBar = document.getElementById("liftBar");
+      const weightBar = document.getElementById("weightBar");
+
+      let hasShownCelebration = false;
+      const strict_tolerance = 0; // Strict requirement: difference must be 0
+
+      function playSound() {
+        const audioContext = new (window.AudioContext ||
+          window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 880;
+        gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.001,
+          audioContext.currentTime + 0.3
+        );
+
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.3);
+      }
+
+      function updateDronePosition() {
+        const lift = parseInt(liftSlider.value);
+        const weight = parseInt(weightSlider.value);
+        const difference = lift - weight;
+
+        // Update displays and bars
+        liftValue.textContent = lift;
+        weightValue.textContent = weight;
+        liftDisplay.textContent = lift;
+        weightDisplay.textContent = weight;
+        liftBar.style.width = lift + "%";
+        weightBar.style.width = weight + "%";
+
+        drone.classList.remove("rises", "sinks", "hover");
+
+        // 1. Lift == Weight (STRICT HOVER)
+        if (difference === strict_tolerance) {
+          drone.classList.add("hover");
+          balanceIndicator.innerHTML =
+            '<span class="balanced">🎯 Lift = Weight &rarr; Drone Hovers (Middle) - EXACT!</span>';
+
+          if (!hasShownCelebration) {
+            hasShownCelebration = true;
+            setTimeout(() => {
+              celebrationModal.classList.add("show");
+              playSound();
+            }, 500);
+          }
+          drone.style.transform = "translate(-50%, -50%) rotate(0deg)";
+        }
+        // 2. Lift > Weight (RISES)
+        else if (difference > strict_tolerance) {
+          drone.classList.add("rises");
+          balanceIndicator.innerHTML =
+            '<span class="rises-text">🟢 Lift > Weight &rarr; Drone Rises (Top)</span>';
+          hasShownCelebration = false;
+          // Apply slight tilt based on upward acceleration
+          drone.style.transform = `translate(-50%, -50%) rotate(-${Math.min(
+            10,
+            difference * 0.2
+          )}deg)`;
+        }
+        // 3. Lift < Weight (SINKS)
+        else {
+          drone.classList.add("sinks");
+          balanceIndicator.innerHTML =
+            '<span class="sinks-text">🔴 Lift < Weight &rarr; Drone Sinks (Bottom)</span>';
+          hasShownCelebration = false;
+          // Apply slight tilt based on downward acceleration
+          drone.style.transform = `translate(-50%, -50%) rotate(${Math.min(
+            10,
+            Math.abs(difference) * 0.2
+          )}deg)`;
+        }
+      }
+
+      liftSlider.addEventListener("input", updateDronePosition);
+      weightSlider.addEventListener("input", updateDronePosition);
+
+      resetBtn.addEventListener("click", () => {
+        // Set both sliders to 50 for an immediate, exact match
+        liftSlider.value = 50;
+        weightSlider.value = 50;
+        hasShownCelebration = false;
+        updateDronePosition();
+      });
+
+      closeCelebration.addEventListener("click", () => {
+        celebrationModal.classList.remove("show");
+      });
+
+      // Close modal by clicking outside the content
+      celebrationModal.addEventListener("click", (e) => {
+        if (e.target === celebrationModal) {
+          celebrationModal.classList.remove("show");
+        }
+      });
+
+      function initialize() {
+        liftSlider.value = 80;
+        weightSlider.value = 50;
+        updateDronePosition();
+      }
+
+      initialize();
+    </script>
+  </body>
+</html>
