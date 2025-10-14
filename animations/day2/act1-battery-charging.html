@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LiPo Battery Charging — Capacity × C-rating Demo</title>
+  <style>
+    :root{
+      --bg:#fafafa;
+      --card:#ffffff;
+      --accent:#1a1a1a;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --safe:#10b981;
+      --glass: rgba(0,0,0,0.03);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    *{box-sizing:border-box; margin:0; padding:0;}
+    html,body{height:100%}
+    body{
+      margin:0; background: var(--bg); color:#0a0a0a; display:flex; align-items:center; justify-content:center; padding:28px;
+    }
+    .wrap{width:980px; max-width:100%; display:grid; grid-template-columns:420px 1fr; gap:24px;}
+    .card{
+      background: white;
+      padding:28px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); border:2px solid #d0d0d0
+    }
+    /* Left: Visual battery */
+    .visual{display:flex; flex-direction:column; align-items:center; gap:12px}
+    .battery-stage{position:relative; width:260px; height:140px;}
+    .battery-body{
+      position:absolute; left:0; top:20px; width:100%; height:100px; background:#f5f5f5; box-shadow: inset 0 -8px 20px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center; overflow:hidden; transition: transform 500ms cubic-bezier(.2,.9,.2,1);
+      border:3px solid #9a9a9a;
+    }
+    .battery-tip{position:absolute; right:-18px; top:40px; width:22px; height:40px; background:#d0d0d0; box-shadow:0 4px 10px rgba(0,0,0,0.2); border:2px solid #9a9a9a}
+    .battery-inner{
+      width:88%; height:70%; background:#1a1a1a; transform-origin:center left; transition: width 400ms ease, background 400ms ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 -6px 18px rgba(0,0,0,0.15);
+    }
+    .label-row{display:flex; width:100%; justify-content:space-between; align-items:center; margin-top:10px}
+    .big-num{font-weight:700; font-size:20px; color:#0a0a0a}
+    /* Puff effect */
+    .puff{
+      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); pointer-events:none; transition: transform 400ms ease, filter 400ms ease; will-change:transform, filter;
+    }
+    /* thermometer */
+    .thermo{width:80px; height:220px; background:#f5f5f5; padding:12px; display:flex; flex-direction:column; align-items:center; gap:8px; border:2px solid #d0d0d0}
+    .thermo-track{flex:1; width:22px; background:#e0e0e0; position:relative; overflow:hidden; border:2px solid #9a9a9a}
+    .thermo-fill{position:absolute; left:0; bottom:0; width:100%; height:20%; background:#3a3a3a; transition:height 400ms ease}
+    .temp-number{font-weight:700; color:#0a0a0a}
+    /* Right: Controls */
+    .controls{display:flex; flex-direction:column; gap:12px}
+    .row{display:flex; gap:10px; align-items:center}
+    label{font-size:14px; color:#3a3a3a; font-weight:600}
+    input[type=range]{width:100%}
+    input[type=number]{width:120px; padding:10px 12px; background:white; border:2px solid #d0d0d0; color:#0a0a0a; font-weight:600}
+    .stat-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:8px}
+    .stat{background:#f5f5f5; padding:12px; font-weight:600; border:1px solid #d0d0d0; color:#0a0a0a}
+    /* Buttons */
+    .btn{padding:12px 16px; background:#1a1a1a; border:2px solid #1a1a1a; color:white; font-weight:700; cursor:pointer; transition:all 0.3s}
+    .btn:hover{background:#000000; transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+    .btn-danger{background:#ef4444; border-color:#ef4444}
+    .btn-danger:hover{background:#dc2626}
+    .btn-warning{background:#f59e0b; border-color:#f59e0b}
+    .btn-warning:hover{background:#f97316}
+    .legend{font-size:13px; color:#6a6a6a}
+    /* Tooltips */
+    .tooltip{position:relative; display:inline-block; cursor:pointer}
+    .tooltip .tooltiptext{visibility:hidden; width:200px; background:#3a3a3a; color:#fff; text-align:center; border-radius:4px; padding:8px; position:absolute; z-index:1; bottom:125%; left:50%; transform:translateX(-50%); opacity:0; transition:opacity 0.3s; font-size:12px; line-height:1.4}
+    .tooltip:hover .tooltiptext{visibility:visible; opacity:1}
+    /* responsive */
+    @media (max-width:880px){.wrap{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card visual">
+      <div style="display:flex; gap:12px; width:100%; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-weight:800; font-size:18px">LiPo Puff Demo</div>
+          <div class="legend">Interactive demonstration of Capacity × C-rating and overcurrent puffing</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:12px; color:#9fb0c8">Calculated max continuous current</div>
+          <div id="maxI" class="big-num">— A</div>
+        </div>
+      </div>
+      <div class="battery-stage" aria-hidden>
+        <div class="battery-body" id="batteryBody">
+          <div class="battery-inner" id="batteryInner"></div>
+          <svg class="puff" id="puffSVG" width="420" height="240" viewBox="0 0 420 240" style="transform:translate(-10px,-8px);">
+            <defs>
+              <filter id="blurMe" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="6" result="b" />
+                <feColorMatrix type="matrix" values="1 0 0 0 0  0 0.8 0 0 0  0 0 0.4 0 0  0 0 0 0.6 0"/>
+              </filter>
+            </defs>
+            <g id="puffGroup" filter="url(#blurMe)">
+              <ellipse cx="160" cy="110" rx="60" ry="30" fill="#ffd6c9" opacity="0.0"></ellipse>
+              <ellipse cx="210" cy="80" rx="50" ry="28" fill="#ffb4a2" opacity="0.0"></ellipse>
+              <ellipse cx="130" cy="70" rx="40" ry="26" fill="#ff8a66" opacity="0.0"></ellipse>
+            </g>
+          </svg>
+        </div>
+        <div class="battery-tip"></div>
+      </div>
+      <div style="display:flex; gap:12px; width:100%; justify-content:space-between; margin-top:12px;">
+        <div class="thermo">
+          <div style="font-size:13px; color:#9fb0c8">Temperature</div>
+          <div class="thermo-track">
+            <div class="thermo-fill" id="thermoFill" style="height:12%"></div>
+          </div>
+          <div class="temp-number" id="tempNumber">25°C</div>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:6px">
+          <div style="font-weight:700">Status</div>
+          <div id="statusText">Idle — within safe range</div>
+          <div class="stat-grid">
+            <div class="stat">Capacity: <span id="capShow">2200</span> mAh</div>
+            <div class="stat">C-rating: <span id="cShow">30</span>C</div>
+            <div class="stat">Demand: <span id="dShow">0</span> A</div>
+            <div class="stat">Voltage sag: <span id="sagShow">0.00</span> V</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card controls">
+      <div>
+        <div style="font-weight:800; font-size:16px; margin-bottom:6px">Controls</div>
+        <div class="legend">Set the battery specs then drag the demand current slider to stress the battery.</div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        <div style="flex:1">
+          <label for="cap">Capacity (mAh)
+            <span class="tooltip">?
+              <span class="tooltiptext">The energy storage capacity of the battery, in milliamp-hours.</span>
+            </span>
+          </label>
+          <input id="cap" type="number" min="100" step="100" value="2200">
+        </div>
+        <div style="width:130px">
+          <label for="cr">C-rating
+            <span class="tooltip">?
+              <span class="tooltiptext">The maximum safe continuous discharge rate, relative to capacity.</span>
+            </span>
+          </label>
+          <input id="cr" type="number" min="1" step="1" value="30">
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <label for="demand">Demand current (A)
+          <span class="tooltip">?
+            <span class="tooltiptext">The current being drawn from the battery. Exceeding max continuous current causes overheating and puffing.</span>
+          </span>
+        </label>
+        <input id="demand" type="range" min="0" max="200" step="0.1" value="0">
+        <div style="display:flex; gap:8px; align-items:center; margin-top:8px">
+          <input id="demandNum" type="number" min="0" max="500" step="0.1" value="0">
+          <button class="btn" id="applyBtn">Apply</button>
+          <button class="btn btn-warning" id="burstBtn">Burst (2s)</button>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <div style="font-weight:700">Explanation</div>
+        <div class="legend" style="margin-top:6px">
+          Max continuous current = <code>Capacity(A) × C-rating</code>.
+          If demand exceeds that, battery heats up and swells (puffs).
+          This demo visualizes temperature, voltage sag and puff size as the demand grows.
+        </div>
+      </div>
+      <div style="margin-top:12px; display:flex; gap:10px; align-items:center; justify-content:space-between">
+        <div style="font-size:13px; color:#9fb0c8">Safety hint: Real LiPos can be dangerous. This is a simulation only.</div>
+        <div style="display:flex; gap:8px; align-items:center">
+          <button class="btn btn-danger" id="resetBtn">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Elements
+    const capEl = document.getElementById('cap');
+    const crEl = document.getElementById('cr');
+    const demandEl = document.getElementById('demand');
+    const demandNum = document.getElementById('demandNum');
+    const maxIEl = document.getElementById('maxI');
+    const capShow = document.getElementById('capShow');
+    const cShow = document.getElementById('cShow');
+    const dShow = document.getElementById('dShow');
+    const statusText = document.getElementById('statusText');
+    const thermoFill = document.getElementById('thermoFill');
+    const tempNumber = document.getElementById('tempNumber');
+    const batteryInner = document.getElementById('batteryInner');
+    const batteryBody = document.getElementById('batteryBody');
+    const puffGroup = document.getElementById('puffGroup');
+    const sagShow = document.getElementById('sagShow');
+    // state
+    let capacity_mAh = Number(capEl.value);
+    let C = Number(crEl.value);
+    let demandA = Number(demandEl.value);
+    let temp = 25; // Celsius baseline
+    let sagV = 0;
+    let burstTimeout = null;
+
+    function calcMaxI(){
+      const Ah = capacity_mAh / 1000;
+      return Ah * C; // amps
+    }
+
+    function updateUI(){
+      capacity_mAh = Number(capEl.value);
+      C = Number(crEl.value);
+      demandA = Number(demandEl.value);
+      capShow.textContent = capacity_mAh;
+      cShow.textContent = C;
+      dShow.textContent = demandA.toFixed(2);
+      const maxI = calcMaxI();
+      maxIEl.textContent = maxI.toFixed(2) + ' A';
+      // battery fill width shows proportion of demand to max (capped at 100%)
+      const fillPct = Math.min(1, demandA / Math.max(0.0001, maxI));
+      batteryInner.style.width = Math.max(6, fillPct*88) + '%';
+      // calculate overcurrent ratio
+      const ratio = demandA / Math.max(0.0001, maxI);
+      // temperature behavior: baseline 25C + 18C per 1x overcurrent ratio above 1, plus a mild current-dependent heating
+      const baseHeat = 25 + (demandA*0.02); // mild heat from draw
+      const overHeat = ratio > 1 ? ( (ratio-1) * 55 ) : 0; // punitive heat when over
+      // soften with a simple smoothing
+      temp = temp*0.85 + (baseHeat + overHeat)*0.15;
+      // voltage sag approximate (Ohmic + sag from high draw): sag = I*R + extra when ratio>1
+      // assume internal R ~ 0.02 ohm for small pack
+      const R = 0.02; // ohm
+      sagV = (demandA * R) + (ratio>1 ? (Math.min(1.5, (ratio-1)*0.5)) : 0);
+      // thermofill height mapping 20°C->5% 150°C->100%
+      const thermoPct = Math.min(100, Math.max(5, ((temp - 20) / (150-20)) * 100));
+      thermoFill.style.height = thermoPct + '%';
+      tempNumber.textContent = Math.round(temp) + '°C';
+      sagShow.textContent = sagV.toFixed(2);
+      // puff visual: scale + opacity depending on ratio and temp
+      const puffScale = 1 + Math.min(1.4, Math.max(0, (ratio-0.9)/1.4 + (temp-30)/220));
+      const puffOpacity = Math.min(0.95, Math.max(0, (ratio-0.95) * 0.9 + (temp-40)/220));
+      puffGroup.style.transform = `translate(-10px,-8px) scale(${puffScale})`;
+      // set individual ellipse opacities for depth
+      [...puffGroup.querySelectorAll('ellipse')].forEach((el,i)=>{
+        const base = [0.42,0.32,0.22][i];
+        el.style.opacity = puffOpacity * base;
+        // shift cx for more dramatic puff
+        const dx = Math.min(40, (ratio-1)*80 + (temp-35)/2);
+        const cx = [160,210,130][i] + (dx*(i-1));
+        el.setAttribute('cx', cx);
+        el.setAttribute('rx', 40 + puffScale*18 - i*6);
+        el.setAttribute('ry', 22 + puffScale*12 - i*4);
+      });
+      // battery body swell: small translate and scale based on puff
+      batteryBody.style.transform = `scale(${1 + Math.min(0.35, (puffScale - 1) / 1.2)}) translateY(${Math.min(12, (puffScale - 1) * 10)}px)`;
+      // color shift: green -> yellow -> red based on ratio
+      if(ratio <= 1){
+        batteryInner.style.background = 'linear-gradient(90deg,#10b981,#5eead4)';
+        statusText.textContent = 'Normal — within safe range';
+      } else if(ratio > 1 && ratio <= 1.5){
+        batteryInner.style.background = 'linear-gradient(90deg,#f59e0b,#f97316)';
+        statusText.textContent = 'Warning — drawing above rated current';
+      } else {
+        batteryInner.style.background = 'linear-gradient(90deg,#ef4444,#ff6b6b)';
+        statusText.textContent = 'Danger — heavy overcurrent! Risk of puffing and damage';
+      }
+    }
+
+    // interactions
+    demandEl.addEventListener('input', ()=>{
+      demandNum.value = demandEl.value;
+      updateUI();
+    });
+    demandNum.addEventListener('input', ()=>{
+      demandEl.value = demandNum.value;
+      updateUI();
+    });
+    capEl.addEventListener('change', ()=>{ demandEl.max = Math.max(50, Math.round(calcMaxI()*3)); updateUI(); });
+    crEl.addEventListener('change', ()=>{ demandEl.max = Math.max(50, Math.round(calcMaxI()*3)); updateUI(); });
+    document.getElementById('applyBtn').addEventListener('click', ()=>{
+      // animate for a few seconds to let heating show
+      clearTimeout(burstTimeout);
+      let steps = 40; let i = 0;
+      const start = demandA;
+      const target = Number(demandNum.value);
+      const old = demandEl.value;
+      const t = setInterval(()=>{
+        i++; const frac = i/steps;
+        demandEl.value = start + (target-start)*frac;
+        demandNum.value = demandEl.value;
+        updateUI();
+        if(i>=steps){ clearInterval(t); }
+      },12);
+    });
+    document.getElementById('burstBtn').addEventListener('click', ()=>{
+      // short burst above current (2s) — temporarily increase demand
+      clearTimeout(burstTimeout);
+      const maxI = calcMaxI();
+      const burstI = Math.max(maxI*1.6, Number(demandNum.value) + 30);
+      const saved = Number(demandEl.value);
+      // ramp up
+      let upSteps = 12, up=0;
+      const upInt = setInterval(()=>{
+        up++; demandEl.value = saved + (burstI-saved)*(up/upSteps); demandNum.value = demandEl.value; updateUI(); if(up>=upSteps){ clearInterval(upInt);} },20);
+      burstTimeout = setTimeout(()=>{
+        // ramp down
+        let downSteps = 18, down=0;
+        const downInt = setInterval(()=>{ down++; demandEl.value = burstI + (saved-burstI)*(down/downSteps); demandNum.value = demandEl.value; updateUI(); if(down>=downSteps){ clearInterval(downInt);} },20);
+      },2000);
+    });
+    document.getElementById('resetBtn').addEventListener('click', ()=>{
+      capEl.value = 2200; crEl.value = 30; demandEl.value = 0; demandNum.value = 0; temp = 25; updateUI();
+    });
+    // tick loop to simulate continuous heating even when slider is static
+    setInterval(()=>{ updateUI(); },120);
+    // init
+    demandEl.max = Math.max(50, Math.round(calcMaxI()*3));
+    updateUI();
+  </script>
+</body>
+</html>

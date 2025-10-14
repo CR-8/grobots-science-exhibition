@@ -6,13 +6,20 @@
 
 class ExhibitionViewer {
     constructor() {
-        // Page configurations - Optimized mapping
+        // Page configurations - Optimized mapping for both days
         this.pages = {
-            'vertical-forces': 'animations/act4-vertical-forces.html',
-            'weight-lift': 'animations/act3-weight-lift.html',
-            'drone-parts': 'animations/act5-drone-parts.html',
-            'propeller-thrust': 'animations/act1-propellor-thrust.html',
-            'balance': 'animations/act2-balance.html'
+            // Day 1 Activities
+            'day1-act1': 'animations/day1/act1-propellor-thrust.html',
+            'day1-act2': 'animations/day1/act2-balance.html',
+            'day1-act3': 'animations/day1/act3-weight-lift.html',
+            'day1-act4': 'animations/day1/act4-vertical-forces.html',
+            'day1-act5': 'animations/day1/act5-drone-parts.html',
+            
+            // Day 2 Activities
+            'day2-act1': 'animations/day2/act1-battery-charging.html',
+            'day2-act2': 'animations/day2/act2-multi-rotor-torque-cancelation.html',
+            'day2-act3': 'animations/day2/act3-fcsi-simulation.html',
+            'day2-act4': 'animations/day2/act4-dgca.html'
         };
 
         // Cache DOM elements for better performance

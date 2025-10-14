@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DGCA Drone Rules India</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fafafa;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            border: 2px solid #d0d0d0;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #d0d0d0;
+        }
+
+        .header-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 400;
+            color: #0a0a0a;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: #3a3a3a;
+            font-weight: 600;
+        }
+
+        /* Grid */
+        .rules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 48px;
+        }
+
+        /* Card */
+        .rule-card {
+            position: relative;
+            height: 320px;
+            cursor: pointer;
+        }
+
+        .rule-card-inner {
+            position: absolute;
+            inset: 0;
+            background: #f5f5f5;
+            padding: 24px;
+            border: 2px solid #d0d0d0;
+            transition: all 0.3s ease;
+        }
+
+        .rule-card:hover .rule-card-inner {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            border-color: #1a1a1a;
+        }
+
+        .rule-icon {
+            font-size: 3.5rem;
+            text-align: center;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+            filter: grayscale(100%);
+            opacity: 0.7;
+        }
+
+        .rule-card:hover .rule-icon {
+            transform: scale(1.15);
+            opacity: 1;
+        }
+
+        .rule-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #0a0a0a;
+            margin-bottom: 12px;
+            text-align: center;
+            min-height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rule-description {
+            font-size: 0.875rem;
+            color: #3a3a3a;
+            text-align: center;
+            transition: all 0.3s ease;
+            line-height: 1.5;
+        }
+
+        .rule-card:hover .rule-description {
+            color: #0a0a0a;
+        }
+
+        .rule-number {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .rule-card:hover .rule-number {
+            transform: scale(1.15);
+            background: #000000;
+        }
+
+        .rule-border {
+            position: absolute;
+            inset: 0;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        /* Bottom Info Section */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .info-card {
+            background: #f5f5f5;
+            padding: 24px;
+            border: 2px solid #d0d0d0;
+            border-left: 4px solid #1a1a1a;
+        }
+
+        .info-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            filter: grayscale(100%);
+            opacity: 0.7;
+        }
+
+        .info-card h3 {
+            color: #0a0a0a;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1.125rem;
+        }
+
+        .info-card p {
+            color: #3a3a3a;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Important Notice */
+        .notice {
+            background: #f5f5f5;
+            border-left: 4px solid #1a1a1a;
+            padding: 24px;
+            border: 2px solid #d0d0d0;
+        }
+
+        .notice p {
+            color: #0a0a0a;
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            .container {
+                padding: 24px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+
+            .rules-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px;
+            }
+
+            .header h1 {
+                font-size: 1.75rem;
+            }
+
+            .rule-card {
+                height: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-icon">🚁</div>
+            <h1>DGCA Drone Rules India</h1>
+            <p>10 Essential Rules Every Pilot Must Know</p>
+        </div>
+
+        <!-- Grid of Rules -->
+        <div class="rules-grid" id="rulesGrid"></div>
+
+        <!-- Bottom Info Section -->
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-icon">🔗</div>
+                <h3>Digital Sky Platform</h3>
+                <p>Visit digitalsky.dgca.gov.in for flight approvals and airspace clearance</p>
+            </div>
+
+            <div class="info-card">
+                <div class="info-icon">📚</div>
+                <h3>Training Centers</h3>
+                <p>Get certified from DGCA-authorized Remote Pilot Training Organizations (RPTO)</p>
+            </div>
+
+            <div class="info-card">
+                <div class="info-icon">⚡</div>
+                <h3>Safety First</h3>
+                <p>Always prioritize safety and follow regulations to avoid penalties and fines</p>
+            </div>
+        </div>
+
+        <!-- Important Notice -->
+        <div class="notice">
+            <p>⚠️ IMPORTANT: Non-compliance with DGCA rules can result in fines up to ₹5,00,000, license suspension, and criminal prosecution. Always verify airspace permissions before flying.</p>
+        </div>
+    </div>
+
+    <script>
+        const rules = [
+            {
+                id: 1,
+                title: "Remote Pilot Certificate (RPC)",
+                description: "Required for all commercial drone operations and drones over 2kg",
+                icon: "📜"
+            },
+            {
+                id: 2,
+                title: "Drone Registration",
+                description: "Mandatory for drones weighing more than 250 grams on Digital Sky platform",
+                icon: "📋"
+            },
+            {
+                id: 3,
+                title: "Visual Line of Sight (VLOS)",
+                description: "Keep drone within 500m horizontally and below 400 feet (120m) vertically",
+                icon: "👁️"
+            },
+            {
+                id: 4,
+                title: "No-Fly Zones",
+                description: "Red zones need govt permission, Yellow zones need ATC clearance, Green zones are free",
+                icon: "🚫"
+            },
+            {
+                id: 5,
+                title: "Daylight Operations Only",
+                description: "Fly only 30 minutes after sunrise to 30 minutes before sunset",
+                icon: "☀️"
+            },
+            {
+                id: 6,
+                title: "Mandatory Insurance",
+                description: "Commercial operators must have valid third-party liability insurance",
+                icon: "🛡️"
+            },
+            {
+                id: 7,
+                title: "No Flying Over People",
+                description: "Maintain 200 feet distance from built-up areas and crowds",
+                icon: "👥"
+            },
+            {
+                id: 8,
+                title: "Heavy Penalties",
+                description: "Violations: ₹25,000 - ₹5,00,000 fines and possible license suspension",
+                icon: "⚠️"
+            },
+            {
+                id: 9,
+                title: "Maintain Flight Logs",
+                description: "Keep detailed records of drone, battery, maintenance, and flight hours",
+                icon: "📝"
+            },
+            {
+                id: 10,
+                title: "Digital Sky Clearance",
+                description: "Get airspace approval 1-4 weeks before flight from Digital Sky platform",
+                icon: "🌐"
+            }
+        ];
+
+        // Render rules
+        const rulesGrid = document.getElementById('rulesGrid');
+        
+        rules.forEach(rule => {
+            const card = document.createElement('div');
+            card.className = 'rule-card';
+            card.innerHTML = `
+                <div class="rule-card-inner">
+                    <div class="rule-icon">${rule.icon}</div>
+                    <h3 class="rule-title">${rule.title}</h3>
+                    <p class="rule-description">${rule.description}</p>
+                    <div class="rule-number">${rule.id}</div>
+                    <div class="rule-border"></div>
+                </div>
+            `;
+            rulesGrid.appendChild(card);
+        });
+    </script>
+</body>
+</html>
